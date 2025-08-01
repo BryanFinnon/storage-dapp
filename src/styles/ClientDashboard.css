@@ -1,0 +1,88 @@
+.client-dashboard {
+  padding: 40px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+
+.client-dashboard h1 {
+  font-size: 26px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.offres-liste {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.offre-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  width: 200px;
+  background-color: #fefefe;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.offre-card h3 {
+  margin-top: 0;
+}
+
+.offre-card button {
+  margin-top: 10px;
+  padding: 8px 14px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.offre-card button:hover {
+  background-color: #0056b3;
+}
+
+.historique table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.historique th,
+.historique td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: center;
+}
+
+.historique th {
+  background-color: #f5f5f5;
+}
+
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ccc;
+}
+
+.logout-button {
+  background-color: #dc3545;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  background-color: #b02a37;
+}
