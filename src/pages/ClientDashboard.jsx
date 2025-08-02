@@ -5,6 +5,7 @@ import "../styles/ClientDashboard.css";
 export default function ClientDashboard() {
   const [commandes, setCommandes] = useState([]);
   const [offres, setOffres] = useState([]);
+  const [stockRecu, setStockRecu] = useState([]);
   const navigate = useNavigate();
 
   // 🔐 Déconnexion
@@ -21,7 +22,7 @@ export default function ClientDashboard() {
       .catch((err) => console.error("Erreur chargement offres", err));
   }, []);
 
-  // 🔄 Charger commandes de l'utilisateur connecté
+  // 🔄 Charger commandes
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
@@ -32,7 +33,18 @@ export default function ClientDashboard() {
     }
   }, []);
 
-  // 🛒 Enregistrer une commande
+  // 🔄 Charger stock livré
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user) {
+      fetch(`http://localhost/iot-backend/get_stock_client.php?user_id=${user.userId}`)
+        .then((res) => res.json())
+        .then((data) => setStockRecu(data))
+        .catch((err) => console.error("Erreur chargement stock client", err));
+    }
+  }, []);
+
+  // 🛒 Passer une commande
   const passerCommande = async (offre) => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user) return alert("You need to be logged in to order");
@@ -51,8 +63,7 @@ export default function ClientDashboard() {
 
     const data = await res.json();
     if (data.message) {
-      alert("Order registred !");
-      // Optionnel : recharge la liste
+      alert("Order registered!");
       setCommandes([...commandes, { ...commande, statut: "En attente" }]);
     } else {
       alert("Error while placing order");
@@ -62,7 +73,7 @@ export default function ClientDashboard() {
   return (
     <div className="client-dashboard">
       <header className="dashboard-header">
-        <h1>Client  Dashboard</h1>
+        <h1>Client Dashboard</h1>
         <button className="logout-button" onClick={handleLogout}>
           Logout
         </button>
@@ -83,7 +94,7 @@ export default function ClientDashboard() {
       </section>
 
       <section className="historique">
-        <h2>🧾 My orders</h2>
+        <h2>🧾 My Orders</h2>
         {commandes.length === 0 ? (
           <p>No orders yet.</p>
         ) : (
@@ -93,7 +104,7 @@ export default function ClientDashboard() {
                 <th>N°</th>
                 <th>Provider</th>
                 <th>Quantity</th>
-                <th>Statut</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
@@ -103,6 +114,30 @@ export default function ClientDashboard() {
                   <td>{cmd.fournisseur}</td>
                   <td>{cmd.quantite}</td>
                   <td>{cmd.statut}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
+
+      <section className="stock-recu">
+        <h2>📂 My Received Storage</h2>
+        {stockRecu.length === 0 ? (
+          <p>You have not received any storage yet.</p>
+        ) : (
+          <table>
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>Quantity</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stockRecu.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{item.fournisseur}</td>
+                  <td>{item.quantite}</td>
                 </tr>
               ))}
             </tbody>
