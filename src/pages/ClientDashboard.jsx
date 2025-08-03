@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/ClientDashboard.css";
+import { createAgreementOrder } from "../services/blockchain"; // ✅ Intégration du smart contract
 
 export default function ClientDashboard() {
   const [commandes, setCommandes] = useState([]);
@@ -8,13 +9,11 @@ export default function ClientDashboard() {
   const [stockRecu, setStockRecu] = useState([]);
   const navigate = useNavigate();
 
-  // 🔐 Déconnexion
   const handleLogout = () => {
     localStorage.removeItem("user");
     navigate("/");
   };
 
-  // 🔄 Charger les offres
   useEffect(() => {
     fetch("http://localhost/iot-backend/get_offres.php")
       .then((res) => res.json())
@@ -22,43 +21,40 @@ export default function ClientDashboard() {
       .catch((err) => console.error("Erreur chargement offres", err));
   }, []);
 
-  // 🔄 Charger commandes du client
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.userId) { // Vérifier que user et userId existent
+    if (user && user.userId) {
       fetch(`http://localhost/iot-backend/get_commandes_user.php?user_id=${user.userId}`)
         .then((res) => res.json())
         .then((data) => {
-          if (Array.isArray(data)) { // S'assurer que les données sont un tableau
+          if (Array.isArray(data)) {
             setCommandes(data);
           } else {
             console.error("Données de commandes inattendues:", data);
-            setCommandes([]); // Réinitialiser pour éviter les erreurs
+            setCommandes([]);
           }
         })
         .catch((err) => console.error("Erreur chargement commandes", err));
     }
   }, []);
 
-  // 🔄 Charger stock livré (stock_client)
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.userId) { // Vérifier que user et userId existent
+    if (user && user.userId) {
       fetch(`http://localhost/iot-backend/get_stock_client.php?user_id=${user.userId}`)
         .then((res) => res.json())
         .then((data) => {
-          if (Array.isArray(data)) { // S'assurer que les données sont un tableau
+          if (Array.isArray(data)) {
             setStockRecu(data);
           } else {
             console.error("Données de stock reçu inattendues:", data);
-            setStockRecu([]); // Réinitialiser pour éviter les erreurs
+            setStockRecu([]);
           }
         })
         .catch((err) => console.error("Erreur chargement stock client", err));
     }
   }, []);
 
-  // 🛒 Passer une commande
   const passerCommande = async (offre) => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.userId) return alert("You need to be logged in to order");
@@ -66,7 +62,7 @@ export default function ClientDashboard() {
     const commande = {
       user_id: user.userId,
       fournisseur: offre.fournisseur,
-      quantite: offre.quantite, // Garde la quantité telle qu'elle est dans l'offre ("5 To")
+      quantite: offre.quantite,
     };
 
     try {
@@ -77,9 +73,17 @@ export default function ClientDashboard() {
       });
 
       const data = await res.json();
-      if (res.ok && data.message) { // Vérifier aussi res.ok pour une réponse 2xx
-        alert(data.message);
-        // Mettre à jour la liste des commandes du client après avoir passé une commande
+      if (res.ok && data.message && data.orderId) {
+        // ✅ Appel au smart contract pour créer l'accord sur la blockchain
+        const details = `provider:${commande.fournisseur},quantity:${commande.quantite}`;
+        try {
+          await createAgreementOrder(details);
+          alert("Commande ajoutée et enregistrée sur la blockchain.");
+        } catch (err) {
+          console.error("Erreur Blockchain:", err);
+          alert("Commande enregistrée, mais erreur lors de l'ajout blockchain: " + err.message);
+        }
+
         setCommandes(prevCmds => [...prevCmds, { ...commande, id: data.orderId, statut: "En attente" }]);
       } else {
         alert(data.message || "Error while placing order");
@@ -94,9 +98,7 @@ export default function ClientDashboard() {
     <div className="client-dashboard">
       <header className="dashboard-header">
         <h1>Client Dashboard</h1>
-        <button className="logout-button" onClick={handleLogout}>
-          Logout
-        </button>
+        <button className="logout-button" onClick={handleLogout}>Logout</button>
       </header>
 
       <section className="offres">
@@ -155,7 +157,7 @@ export default function ClientDashboard() {
               <tr>
                 <th>Provider</th>
                 <th>Quantity</th>
-                <th>Date Received</th> {/* Ajout de la colonne Date Received */}
+                <th>Date Received</th>
               </tr>
             </thead>
             <tbody>
@@ -163,7 +165,7 @@ export default function ClientDashboard() {
                 <tr key={idx}>
                   <td>{item.fournisseur}</td>
                   <td>{item.quantite}</td>
-                  <td>{new Date(item.date_reception).toLocaleDateString()}</td> {/* Formatage de la date */}
+                  <td>{new Date(item.date_reception).toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>
