@@ -1,4 +1,3 @@
-// ✅ Code FINAL : ProviderDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { keccak256, toUtf8Bytes } from "ethers";
@@ -20,7 +19,8 @@ export default function ProviderDashboard() {
 
   const openDeliveryModal = (cmd) => {
     setCurrentOrderToDeliver(cmd);
-    setDeliveryForm({ deliveryFournisseur: cmd.fournisseur, deliveryQuantite: parseInt(cmd.quantite) || "" });
+    const quantiteNumerique = parseInt(cmd.quantite); // ✅ Nettoyage quantité
+    setDeliveryForm({ deliveryFournisseur: cmd.fournisseur, deliveryQuantite: quantiteNumerique });
     setShowDeliveryModal(true);
   };
 
@@ -84,7 +84,8 @@ export default function ProviderDashboard() {
       return;
     }
 
-    const details = `provider:${deliveryForm.deliveryFournisseur},quantity:${deliveryForm.deliveryQuantite}`;
+    // ✅ Génération du hash à partir de données nettoyées
+    const details = `provider:${deliveryForm.deliveryFournisseur},quantity:${quantiteNumerique}`;
     const delivery_hash = keccak256(toUtf8Bytes(details));
     console.log("Hash généré:", delivery_hash);
 
@@ -143,6 +144,7 @@ export default function ProviderDashboard() {
         <button className="logout-button" onClick={handleLogout}>Log out</button>
       </header>
 
+      {/* Publication */}
       <section className="actions">
         <h2>Publish a new offer</h2>
         <form onSubmit={publierOffre}>
@@ -159,6 +161,7 @@ export default function ProviderDashboard() {
         </form>
       </section>
 
+      {/* Liste des commandes */}
       <section className="liste-commandes">
         <h2>📋 Orders</h2>
         {commandes.length === 0 ? (
@@ -197,6 +200,7 @@ export default function ProviderDashboard() {
         )}
       </section>
 
+      {/* Ajout de stock */}
       <section className="ajout-stock">
         <h2>🧮 Add to stock</h2>
         <form onSubmit={ajouterStock}>
@@ -210,6 +214,7 @@ export default function ProviderDashboard() {
         </form>
       </section>
 
+      {/* Modal de livraison */}
       {showDeliveryModal && (
         <div className="modal-overlay">
           <div className="modal-content">

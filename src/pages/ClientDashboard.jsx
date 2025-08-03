@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/ClientDashboard.css";
-import { createAgreementOrder } from "../services/blockchain"; // ✅ Intégration du smart contract
+import { createAgreementOrder } from "../services/blockchain";
 
 export default function ClientDashboard() {
   const [commandes, setCommandes] = useState([]);
@@ -59,10 +59,11 @@ export default function ClientDashboard() {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.userId) return alert("You need to be logged in to order");
 
+    const quantiteNumeric = parseInt(offre.quantite); // ✅ Nettoyage quantité
     const commande = {
       user_id: user.userId,
       fournisseur: offre.fournisseur,
-      quantite: offre.quantite,
+      quantite: `${quantiteNumeric}`, // Toujours stockée comme string (ex: "20")
     };
 
     try {
@@ -74,8 +75,8 @@ export default function ClientDashboard() {
 
       const data = await res.json();
       if (res.ok && data.message && data.orderId) {
-        // ✅ Appel au smart contract pour créer l'accord sur la blockchain
-        const details = `provider:${commande.fournisseur},quantity:${commande.quantite}`;
+        // ✅ Génération du hash avec quantité numérique propre
+        const details = `provider:${commande.fournisseur},quantity:${quantiteNumeric}`;
         try {
           await createAgreementOrder(details);
           alert("Commande ajoutée et enregistrée sur la blockchain.");
