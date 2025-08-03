@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Livraison</title>
+</head>
+<body>
+    <h1>Test de livraison</h1>
+    <button onclick="testLivraison()">Envoyer Test</button>
+    <pre id="response"></pre>
+
+    <script>
+    async function testLivraison() {
+        const dataToSend = {
+            commande_id: 5, // Utilisez l'ID d'une commande "En attente" de votre BDD
+            fournisseur: "Samsung", // Utilisez un fournisseur qui a du stock réel
+            quantite: 10 // La quantité que vous voulez livrer
+        };
+
+        try {
+            const response = await fetch("http://localhost/iot-backend/livrer_commande.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(dataToSend),
+            });
+
+            const responseText = await response.text(); // Lire la réponse en texte brut
+            document.getElementById('response').textContent = responseText;
+
+            if (response.ok) { // Vérifier si le statut HTTP est OK (200-299)
+                try {
+                    const data = JSON.parse(responseText); // Tenter de parser en JSON
+                    alert("Succès ou Erreur PHP : " + (data.message || data.error || responseText));
+                } catch (e) {
+                    alert("Réponse non-JSON du PHP : " + responseText);
+                }
+            } else {
+                alert("Erreur HTTP " + response.status + ": " + response.statusText + "\nRéponse: " + responseText);
+            }
+
+        } catch (error) {
+            alert("Erreur de connexion JavaScript: " + error.message);
+            console.error("Erreur de connexion:", error);
+        }
+    }
+    </script>
+</body>
+</html>

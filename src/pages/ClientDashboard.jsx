@@ -22,24 +22,38 @@ export default function ClientDashboard() {
       .catch((err) => console.error("Erreur chargement offres", err));
   }, []);
 
-  // 🔄 Charger commandes
+  // 🔄 Charger commandes du client
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
+    if (user && user.userId) { // Vérifier que user et userId existent
       fetch(`http://localhost/iot-backend/get_commandes_user.php?user_id=${user.userId}`)
         .then((res) => res.json())
-        .then((data) => setCommandes(data))
+        .then((data) => {
+          if (Array.isArray(data)) { // S'assurer que les données sont un tableau
+            setCommandes(data);
+          } else {
+            console.error("Données de commandes inattendues:", data);
+            setCommandes([]); // Réinitialiser pour éviter les erreurs
+          }
+        })
         .catch((err) => console.error("Erreur chargement commandes", err));
     }
   }, []);
 
-  // 🔄 Charger stock livré
+  // 🔄 Charger stock livré (stock_client)
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
+    if (user && user.userId) { // Vérifier que user et userId existent
       fetch(`http://localhost/iot-backend/get_stock_client.php?user_id=${user.userId}`)
         .then((res) => res.json())
-        .then((data) => setStockRecu(data))
+        .then((data) => {
+          if (Array.isArray(data)) { // S'assurer que les données sont un tableau
+            setStockRecu(data);
+          } else {
+            console.error("Données de stock reçu inattendues:", data);
+            setStockRecu([]); // Réinitialiser pour éviter les erreurs
+          }
+        })
         .catch((err) => console.error("Erreur chargement stock client", err));
     }
   }, []);
@@ -47,26 +61,32 @@ export default function ClientDashboard() {
   // 🛒 Passer une commande
   const passerCommande = async (offre) => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) return alert("You need to be logged in to order");
+    if (!user || !user.userId) return alert("You need to be logged in to order");
 
     const commande = {
       user_id: user.userId,
       fournisseur: offre.fournisseur,
-      quantite: offre.quantite,
+      quantite: offre.quantite, // Garde la quantité telle qu'elle est dans l'offre ("5 To")
     };
 
-    const res = await fetch("http://localhost/iot-backend/add_commande.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(commande),
-    });
+    try {
+      const res = await fetch("http://localhost/iot-backend/add_commande.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(commande),
+      });
 
-    const data = await res.json();
-    if (data.message) {
-      alert("Order registered!");
-      setCommandes([...commandes, { ...commande, statut: "En attente" }]);
-    } else {
-      alert("Error while placing order");
+      const data = await res.json();
+      if (res.ok && data.message) { // Vérifier aussi res.ok pour une réponse 2xx
+        alert(data.message);
+        // Mettre à jour la liste des commandes du client après avoir passé une commande
+        setCommandes(prevCmds => [...prevCmds, { ...commande, id: data.orderId, statut: "En attente" }]);
+      } else {
+        alert(data.message || "Error while placing order");
+      }
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert("Error while placing order. Check backend connection.");
     }
   };
 
@@ -82,14 +102,18 @@ export default function ClientDashboard() {
       <section className="offres">
         <h2>📦 Offers available</h2>
         <div className="offres-liste">
-          {offres.map((offre) => (
-            <div className="offre-card" key={offre.id}>
-              <h3>{offre.fournisseur}</h3>
-              <p>{offre.quantite}</p>
-              <p>{offre.prix} £</p>
-              <button onClick={() => passerCommande(offre)}>Order</button>
-            </div>
-          ))}
+          {offres.length === 0 ? (
+            <p>No offers available yet.</p>
+          ) : (
+            offres.map((offre) => (
+              <div className="offre-card" key={offre.id}>
+                <h3>{offre.fournisseur}</h3>
+                <p>{offre.quantite}</p>
+                <p>{offre.prix} £</p>
+                <button onClick={() => passerCommande(offre)}>Order</button>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
@@ -131,6 +155,7 @@ export default function ClientDashboard() {
               <tr>
                 <th>Provider</th>
                 <th>Quantity</th>
+                <th>Date Received</th> {/* Ajout de la colonne Date Received */}
               </tr>
             </thead>
             <tbody>
@@ -138,6 +163,7 @@ export default function ClientDashboard() {
                 <tr key={idx}>
                   <td>{item.fournisseur}</td>
                   <td>{item.quantite}</td>
+                  <td>{new Date(item.date_reception).toLocaleDateString()}</td> {/* Formatage de la date */}
                 </tr>
               ))}
             </tbody>
