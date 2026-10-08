@@ -1,43 +1,49 @@
-# Decentralised Storage dApp
+# Blockchain-Enabled Storage and Delivery Prototype
 
-An exploratory Web3 prototype for storing file metadata through a smart-contract-oriented workflow and retrieving content through a web interface.
+A full-stack prototype exploring how Ethereum transactions can support order, stock and delivery workflows alongside a conventional web application.
+
+## Features
+
+- Client and provider dashboards
+- User registration and login prototypes
+- Stock, offer and order management
+- PHP and MySQL data endpoints
+- Ethereum wallet interaction through ethers.js
+- Smart-contract ABI integration for order and delivery events
+
+## Technology
+
+React 19 · JavaScript · ethers.js · PHP · MySQL
+
+## Local frontend
+
+```bash
+git clone https://github.com/BryanFinnon/storage-dapp.git
+cd storage-dapp
+npm install
+npm start
+```
+
+The React application starts on [http://localhost:3000](http://localhost:3000).
+
+## Repository structure
+
+```text
+src/pages/               client and provider interfaces
+src/services/            blockchain integration
+*.php                    experimental PHP endpoints
+iot_datachain.sql        database schema
+public/                  interface screenshots and static assets
+```
 
 ## Project status
 
-This repository is an early technical prototype. It contains useful experiments across frontend, backend, database, and Solidity code, but the architecture is not yet consolidated into a production-ready application.
+This is an exploratory prototype rather than a production dApp. The repository includes a contract ABI and address used by the client, but not the Solidity source or a reproducible contract deployment.
 
-## Current components
+Before production use, the project would need:
 
-- React client for upload and retrieval workflows
-- Experimental backend services
-- Local database configuration
-- Solidity contract prototype
-- IPFS/Web3 integration experiments
-
-## What this project demonstrates
-
-- Connecting a browser interface to decentralised-storage concepts
-- Modelling file metadata for on-chain references
-- Exploring the boundary between blockchain state and off-chain content
-- Comparing alternative backend approaches during prototyping
-
-## Before running
-
-Review the component-level configuration and choose one backend implementation. Local endpoints, database settings, contract addresses, and provider URLs must be supplied for your own environment; never commit private keys or credentials.
-
-## Recommended next steps
-
-- [ ] Select and document one supported architecture
-- [ ] Complete and test the Solidity contract
-- [ ] Replace local constants with environment configuration
-- [ ] Add a root-level development command
-- [ ] Add contract, API, and UI tests
-- [ ] Document threat model and deployment process
-
-## Limitations
-
-This is not a production storage service. Security review, persistent deployment, access control, contract deployment records, and a reproducible end-to-end setup are still required.
-
-## Author
-
-Bryan Finnon — MSc Computer Science (Distinction), focused on applied AI and software engineering.
+- One documented backend architecture
+- Environment-based API, database and contract configuration
+- Contract source, deployment records and tests
+- Authentication and access-control review
+- Automated API, UI and integration tests
